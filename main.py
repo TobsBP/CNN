@@ -3,9 +3,18 @@ import numpy as np
 from skimage.feature import hog
 from PIL import Image
 import joblib
+import sys
+import os
+
+def resource_path(path):
+    if hasattr(sys, "_MEIPASS"):
+        return os.path.join(sys._MEIPASS, path)
+    return path
+
 
 # carregar modelo HOG+SVM
-model = joblib.load("number_model.pkl")
+model_path = resource_path("number_model.pkl")
+model = joblib.load(model_path)
 
 def predict_frame(frame):
     # converter para PIL

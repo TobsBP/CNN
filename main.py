@@ -3,18 +3,9 @@ import numpy as np
 from skimage.feature import hog
 from PIL import Image
 import joblib
-import sys
-import os
-
-def resource_path(path):
-    if hasattr(sys, "_MEIPASS"):
-        return os.path.join(sys._MEIPASS, path)
-    return path
-
 
 # carregar modelo HOG+SVM
-model_path = resource_path("number_model.pkl")
-model = joblib.load(model_path)
+model = joblib.load("number_model.pkl")
 
 def predict_frame(frame):
     # converter para PIL
@@ -30,24 +21,29 @@ def predict_frame(frame):
     return str(pred)
 
 cap = cv2.VideoCapture(0)
+ultimo_digit = None
 
 while True:
     ret, frame = cap.read()
     if not ret:
         break
 
-    digit = predict_frame(frame)
-    print("Detectado:", digit)
+    key = cv2.waitKey(1) & 0xFF
 
-    with open("resultado.txt", "w") as f:
-        f.write(digit)
+    if key == ord(" "):
+        ultimo_digit = predict_frame(frame)
+        print("Detectado:", ultimo_digit)
 
-    cv2.putText(frame, f"Num: {digit}", (10,40),
-                cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2)
+        with open("resultado.txt", "w") as f:
+            f.write(ultimo_digit)
+
+    if ultimo_digit is not None:
+        cv2.putText(frame, f"Num: {ultimo_digit}", (10, 40),
+                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
     cv2.imshow("Cam", frame)
 
-    if cv2.waitKey(1) & 0xFF == ord("q"):
+    if key == ord("q"):
         break
 
 cap.release()
